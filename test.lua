@@ -87,6 +87,23 @@ function makescheme(file)
   return scheme
 end
 
+
+--Transforma una riga dello schema in stringa
+--@param scheme lo schema di parole
+--@param nline l'indice della riga da transformare
+--@return la riga della matrice come stringa
+function serialize (scheme, nline)
+  local string = {""}
+  for i = 1, #scheme[nline] do
+    if not iscolumn then
+      string[#string+1] = scheme[nline][i]
+    end
+  end
+  string = table.concat(string)
+  return string
+end
+
+
 file1=arg[1]
 wordlist=arg[2]
 scheme=scomponi(file1)
