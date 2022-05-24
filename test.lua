@@ -87,7 +87,61 @@ function makescheme(file)
   return scheme
 end
 
+--Crea lista di parole dato un file
+--@param file
+--@return lista di parole
+function make_list(file)
+  lista={}
+  for line in io.lines(file) do 
+    lista[#lista+1]=line
+  end
+  return lista
+end
+
+function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a-word-in-a-2d-grid-of-characters/
+  local x={-1, -1, -1, 0, 0, 1, 1, 1}
+  local y={-1, 0, 1, -1, 1, -1, 0, 1}
+  local c= word:sub(1,1)
+  if scheme[row][column] ~= c then return nil end
+  local len = string.len(word)
+  
+  for i=1,8 do
+    local kappa=1
+    local rd = row + x[i]
+    local cd = column + y[i]
+    
+    for k=2,len do
+      if rd>= #scheme or rd < 1 or cd >= #scheme[1] or cd <1 then break end
+      local suca = word:sub(k,k)
+      local aaaa = scheme[rd][cd]
+      if scheme[rd][cd] ~=  word:sub(k,k) then break end
+        
+      rd = rd + x[i]
+      cd = cd + y[i]
+      kappa=kappa+1
+    end
+  if kappa==len then return true end
+  end
+  return false
+end
+
+function pattern_search(scheme, word)
+        local R = #scheme
+        local C = #scheme[1]
+        for row=1, R do
+            for column=1, C do
+                if scheme[row][column]==word:sub(1,1) and seeker(row, column, scheme, word) then print("pattern found at " .. row ..',' .. column) end
+            end
+        end
+end
+
+
+-------------------------------------------------------------------------------------------------------------------------
 file1=arg[1]
 wordlist=arg[2]
 scheme=scomponi(file1)
+if not check_file_chars(wordlist) then print("Exception: there may be invalid characters in the wordlist") end
+lista_parole= make_list(wordlist)
+pattern_search(scheme,"ciao")
+-------------------------------------------------------------------------------------------------------------------------
 print("fine")
