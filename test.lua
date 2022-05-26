@@ -98,6 +98,13 @@ function make_list(file)
   return lista
 end
 
+
+--Function that seek for a word assuming the first letter of the word match with a scheme letter
+--@param row
+--@param column
+--@param scheme
+--@param word
+--@return true if kappa==len else false
 function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a-word-in-a-2d-grid-of-characters/
   local x={-1, -1, -1, 0, 0, 1, 1, 1}
   local y={-1, 0, 1, -1, 1, -1, 0, 1}
@@ -112,10 +119,7 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
     
     for k=2,len do
       if rd>= #scheme or rd < 1 or cd >= #scheme[1] or cd <1 then break end
-      local suca = word:sub(k,k)
-      local aaaa = scheme[rd][cd]
       if scheme[rd][cd] ~=  word:sub(k,k) then break end
-        
       rd = rd + x[i]
       cd = cd + y[i]
       kappa=kappa+1
@@ -125,23 +129,37 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
   return false
 end
 
+--Function to search a given word into the scheme
+--@param word to search
+--@param scheme
+--return 1
 function pattern_search(scheme, word)
         local R = #scheme
         local C = #scheme[1]
         for row=1, R do
             for column=1, C do
-                if scheme[row][column]==word:sub(1,1) and seeker(row, column, scheme, word) then print("pattern found at " .. row ..',' .. column) end
+                if scheme[row][column]==word:sub(1,1) and seeker(row, column, scheme, word) then print("Success: word \""..word.."\" has been found!") return 1 end
             end
         end
+  return nil
 end
 
-
+--Function to iterate pattern search through the wordlist
+--@param wordlist
+--@param scheme
+--return 1
+function wordlist_iterate(wordlist, scheme)
+  for line in io.lines(wordlist) do
+    pattern_search(scheme,line)
+  end
+  return 1
+end
+ 
 -------------------------------------------------------------------------------------------------------------------------
 file1=arg[1]
 wordlist=arg[2]
 scheme=scomponi(file1)
 if not check_file_chars(wordlist) then print("Exception: there may be invalid characters in the wordlist") end
 lista_parole= make_list(wordlist)
-pattern_search(scheme,"ciao")
--------------------------------------------------------------------------------------------------------------------------
+wordlist_iterate(wordlist,scheme)-------------------------------------------------------------------------------------------------------------------------
 print("fine")
