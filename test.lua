@@ -109,6 +109,7 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
   local x={-1, -1, -1, 0, 0, 1, 1, 1}
   local y={-1, 0, 1, -1, 1, -1, 0, 1}
   local c= word:sub(1,1)
+  local coords = {}
   if scheme[row][column] ~= c then return nil end
   local len = string.len(word)
   
@@ -118,13 +119,14 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
     local cd = column + y[i]
     
     for k=2,len do
-      if rd>= #scheme or rd < 1 or cd >= #scheme[1] or cd <1 then break end
+      if rd> #scheme or rd < 1 or cd > #scheme[1] or cd <1 then break end
       if scheme[rd][cd] ~=  word:sub(k,k) then break end
+      coords[#coords+1]={rd,cd}
       rd = rd + x[i]
       cd = cd + y[i]
       kappa=kappa+1
     end
-  if kappa==len then return true end
+  if kappa==len then return coords end
   end
   return false
 end
@@ -138,7 +140,7 @@ function pattern_search(scheme, word)
         local C = #scheme[1]
         for row=1, R do
             for column=1, C do
-                if scheme[row][column]==word:sub(1,1) and seeker(row, column, scheme, word) then print("Success: word \""..word.."\" has been found!") return 1 end
+                if scheme[row][column]==word:sub(1,1) and seeker(row, column, scheme, word)~=false then print("Success: word \""..word.."\" has been found!") return 1 end
             end
         end
   return nil
@@ -150,10 +152,11 @@ end
 --return 1
 function wordlist_iterate(wordlist, scheme)
   for line in io.lines(wordlist) do
-    pattern_search(scheme,line)
+    if not pattern_search(scheme,line) then return nil end
   end
   return 1
 end
+ 
  
 -------------------------------------------------------------------------------------------------------------------------
 file1=arg[1]
@@ -161,5 +164,7 @@ wordlist=arg[2]
 scheme=scomponi(file1)
 if not check_file_chars(wordlist) then print("Exception: there may be invalid characters in the wordlist") end
 lista_parole= make_list(wordlist)
-wordlist_iterate(wordlist,scheme)-------------------------------------------------------------------------------------------------------------------------
+if not wordlist_iterate(wordlist,scheme) then print("Exception: word does not exist") end
+
+-------------------------------------------------------------------------------------------------------------------------
 print("fine")
