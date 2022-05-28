@@ -1,9 +1,8 @@
---oppure scan da in alto a sx fino in basso a dx, per ogni nodo check tutti gli adiacenti
---se trovo la parola sostituisco i caratteri di quei nodi con 0 (SOLO DOPO CHE LA PAROLA è STATA ACCERTATA)
+--PAROLE INTRECCIATE
+--BY CAROSI ANDREA e FRACASCIA FILIPPO
 
---arg[1] schema
---arg[2] elenco parole
-
+--TODO 
+--maybe implementabile coroutine
 
 --Controllo se il file esiste ed è leggibile
 --@param file è il file da aprire
@@ -104,12 +103,13 @@ end
 --@param column
 --@param scheme
 --@param word
---@return true if kappa==len else false
+--@return lista di coordinate or nil
 function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a-word-in-a-2d-grid-of-characters/
   local x={-1, -1, -1, 0, 0, 1, 1, 1}
   local y={-1, 0, 1, -1, 1, -1, 0, 1}
   local c= word:sub(1,1)
   local coords = {}
+  coords[#coords+1]={row,column}
   if scheme[row][column] ~= c then return nil end
   local len = string.len(word)
   
@@ -128,19 +128,20 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
     end
   if kappa==len then return coords end
   end
-  return false
+  return nil
 end
 
 --Function to search a given word into the scheme
 --@param word to search
 --@param scheme
---return 1
+--return list of coordinates of the given word
 function pattern_search(scheme, word)
         local R = #scheme
         local C = #scheme[1]
         for row=1, R do
             for column=1, C do
-                if scheme[row][column]==word:sub(1,1) and seeker(row, column, scheme, word)~=false then print("Success: word \""..word.."\" has been found!") return 1 end
+                local coords=seeker(row, column, scheme, word)
+                if scheme[row][column]==word:sub(1,1) and coords~=nil then print("Success: word \""..word.."\" has been found!") return coords end
             end
         end
   return nil
@@ -149,15 +150,34 @@ end
 --Function to iterate pattern search through the wordlist
 --@param wordlist
 --@param scheme
---return 1
+--return coordinates of all the words
 function wordlist_iterate(wordlist, scheme)
   for line in io.lines(wordlist) do
-    if not pattern_search(scheme,line) then return nil end
+    local condition_coords=pattern_search(scheme,line)
+    if not condition_coords then return nil else substitution(scheme,condition_coords) end
   end
   return 1
 end
  
  
+function substitution(scheme, coords)
+  for _,i in pairs(coords) do
+    scheme[i[1]][i[2]] = 0
+  end
+  return 1
+end
+
+
+function keyword (scheme)
+  local key=''
+  for i=1, #scheme do
+    for j=1, #scheme[1] do 
+      if scheme[i][j] ~= 0 then key= key .. scheme[i][j]end
+    end
+  end
+  return key
+end
+
 -------------------------------------------------------------------------------------------------------------------------
 file1=arg[1]
 wordlist=arg[2]
@@ -165,6 +185,5 @@ scheme=scomponi(file1)
 if not check_file_chars(wordlist) then print("Exception: there may be invalid characters in the wordlist") end
 lista_parole= make_list(wordlist)
 if not wordlist_iterate(wordlist,scheme) then print("Exception: word does not exist") end
-
 -------------------------------------------------------------------------------------------------------------------------
-print("fine")
+print("The mysterious key is...\"" .. keyword(scheme) .. "\"")
