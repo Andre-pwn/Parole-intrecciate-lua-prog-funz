@@ -2,7 +2,7 @@
 --BY CAROSI ANDREA e FRACASCIA FILIPPO
 
 --TODO 
---maybe implementabile coroutine
+--maybe implementabile le coroutine
 
 --Controllo se il file esiste ed è leggibile
 --@param file è il file da aprire
@@ -152,11 +152,12 @@ end
 --@param scheme
 --return coordinates of all the words
 function wordlist_iterate(wordlist, scheme)
+  local coords={}
   for line in io.lines(wordlist) do
     local condition_coords=pattern_search(scheme,line)
-    if not condition_coords then return nil else substitution(scheme,condition_coords) end
+    if not condition_coords then return nil else coords[#coords+1]=condition_coords end
   end
-  return 1
+  return coords
 end
  
  
@@ -168,11 +169,19 @@ function substitution(scheme, coords)
 end
 
 
-function keyword (scheme)
+function keyword (scheme, coords_to_check)
   local key=''
-  for i=1, #scheme do
-    for j=1, #scheme[1] do 
-      if scheme[i][j] ~= 0 then key= key .. scheme[i][j]end
+  local R = #scheme
+  local C = #scheme[1]
+
+  for _,j in pairs(coords_to_check) do
+        for _,i in pairs(j) do 
+        scheme[i[1]][i[2]] = 0
+    end
+  end
+  for row=1, R do
+    for column=1, C do
+    if scheme[row][column]~=0 then key=key .. scheme[row][column] end
     end
   end
   return key
@@ -184,6 +193,7 @@ wordlist=arg[2]
 scheme=scomponi(file1)
 if not check_file_chars(wordlist) then print("Exception: there may be invalid characters in the wordlist") end
 lista_parole= make_list(wordlist)
-if not wordlist_iterate(wordlist,scheme) then print("Exception: word does not exist") end
+coords = wordlist_iterate(wordlist,scheme)
+if not coords then print("Exception: word does not exist") end
 -------------------------------------------------------------------------------------------------------------------------
-print("The mysterious key is...\"" .. keyword(scheme) .. "\"")
+print("The mysterious key is...\"" .. keyword(scheme,coords) .. "\"")
