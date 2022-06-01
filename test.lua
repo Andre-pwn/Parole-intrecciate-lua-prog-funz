@@ -17,9 +17,9 @@ end
 --@param file è il file da aprire
 --@return matrice di lettere
 function scomponi(file)
-  if not file_exists(file) then print("Exception: error on opening the declared file") return end
-  if not controllo_len(file) then print("Exception: input schema does not respect a valid format (lines-columns)") return end
-  if not check_file_chars(file) then print("Exception: input file contains unvalid character set") return end
+  if not file_exists(file) then print("?") return end
+  if not controllo_len(file) then print("?") return end
+  if not check_file_chars(file) then print("?") return end
   return makescheme(file)
 end
   
@@ -108,8 +108,10 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
   local x={-1, -1, -1, 0, 0, 1, 1, 1}
   local y={-1, 0, 1, -1, 1, -1, 0, 1}
   local c= word:sub(1,1)
-  local coords = {}
+  local coords={}
+  local coords_var = {}
   coords[#coords+1]={row,column}
+  coords_var[#coords_var+1]={row,column}
   if scheme[row][column] ~= c then return nil end
   local len = string.len(word)
   
@@ -122,13 +124,79 @@ function seeker(row,column,scheme,word) --https://www.geeksforgeeks.org/search-a
       if rd> #scheme or rd < 1 or cd > #scheme[1] or cd <1 then break end
       if scheme[rd][cd] ~=  word:sub(k,k) then break end
       coords[#coords+1]={rd,cd}
+
       rd = rd + x[i]
       cd = cd + y[i]
       kappa=kappa+1
     end
-  if kappa==len then return coords end
+    
+  if kappa==len then return coord_finder(coords_var,coords,len) end
   end
   return nil
+end
+
+--Data una tabella di coordinate raw e la lunghezza della parola da cercare, restituisce la tabella di cordinate esatta
+function coord_finder(coords_var,coords,len)
+  --PER TUTTI I CONTROLLI DI SEGUITO
+    --SAPPIAMO CHE se la parola scende lo schema la coordinata X aumenta, mentre se la parola sale la X diminuisce
+    --SAPPIAMO CHE se la parola va verso destra la Y aumenta, se va verso sinistra la Y diminuisce
+    
+    --controllo se la parola va verso il basso
+    if coords[1][1]<coords[#coords][1] then
+      --controllo se va dritta
+      if coords[1][2] == coords[#coords][2] then
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1]+i,coords[1][2]}
+        end
+      -- controllo se va in diagonale destra
+      elseif coords[1][2] < coords[#coords][2] then
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1]+i,coords[1][2]+i}
+        end
+        --se non scende dritto ne verso destra allora per forza verso sinistra
+      else
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1]+i,coords[1][2]-i}
+        end
+      end
+    end
+    
+    --SUPPONGO CHE NELLA LISTA DI PAROLE CI SIANO PAROLE CON PIù DI 1 CARATTERE
+    --controllo se la parola va in orizzontale
+    if coords[1][1]==coords[#coords][1] then
+      --controllo se va verso destra
+      if coords[1][2]<coords[#coords][2] then
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1],coords[1][2]+i}
+        end
+        --va verso sinistra
+      else
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1],coords[1][2]-i}
+        end
+      end
+    end
+    --controllo se la parola sale
+    if coords[1][1]>coords[#coords][1] then
+      --controllo se va dritta
+      if coords[1][2] == coords[#coords][2] then
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1]-i,coords[1][2]}
+        end
+      -- controllo se va in diagonale destra
+      elseif coords[1][2] < coords[#coords][2] then
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1]-i,coords[1][2]+i}
+        end
+        --se non sale dritto ne verso destra allora per forza verso sinistra
+      else
+        for i=1,len-1 do
+          coords_var[#coords_var+1]={coords[1][1]-i,coords[1][2]-i}
+        end
+      end
+    end
+    
+    return coords_var
 end
 
 --Function to search a given word into the scheme
@@ -159,15 +227,6 @@ function wordlist_iterate(wordlist, scheme)
   end
   return coords
 end
- 
- 
-function substitution(scheme, coords)
-  for _,i in pairs(coords) do
-    scheme[i[1]][i[2]] = 0
-  end
-  return 1
-end
-
 
 function keyword (scheme, coords_to_check)
   local key=''
@@ -186,14 +245,13 @@ function keyword (scheme, coords_to_check)
   end
   return key
 end
-
 -------------------------------------------------------------------------------------------------------------------------
 file1=arg[1]
 wordlist=arg[2]
 scheme=scomponi(file1)
-if not check_file_chars(wordlist) then print("Exception: there may be invalid characters in the wordlist") end
-lista_parole= make_list(wordlist)
+if not check_file_chars(wordlist) then print("?") end
 coords = wordlist_iterate(wordlist,scheme)
-if not coords then print("Exception: word does not exist") end
+if not coords then print("?") end
+key=keyword(scheme,coords)
+if key~='' then print("The mysterious key is...\"" .. key .. "\"") else print("?") end
 -------------------------------------------------------------------------------------------------------------------------
-print("The mysterious key is...\"" .. keyword(scheme,coords) .. "\"")
