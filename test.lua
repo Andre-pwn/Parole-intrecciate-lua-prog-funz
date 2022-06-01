@@ -4,6 +4,16 @@
 --TODO 
 --maybe implementabile le coroutine
 
+--[[
+Inizialmente ho interpretato male la traccia credendo che i file passati potessero essere .txt rappresentanti uno schema
+ed una lista di parole
+A fine progetto ho capito che stavo sbagliando così ho aggiunto delle funzioni 
+per implementare l'utilizzo dei file .lua come schema e wordlist
+Per questo motivo alcune funzioni potrebbero sembrare non utili o addirittura sbagliate se utilizzate con file .lua
+
+Il possibile utilizzo di file .txt è rimasto nel progetto
+]]
+
 --Controllo se il file esiste ed è leggibile
 --@param file è il file da aprire
 --@return f o f=nil
@@ -209,7 +219,7 @@ function pattern_search(scheme, word)
         for row=1, R do
             for column=1, C do
                 local coords=seeker(row, column, scheme, word)
-                if scheme[row][column]==word:sub(1,1) and coords~=nil then print("Success: word \""..word.."\" has been found!") return coords end
+                if scheme[row][column]==word:sub(1,1) and coords~=nil then return coords end
             end
         end
   return nil
@@ -245,13 +255,66 @@ function keyword (scheme, coords_to_check)
   end
   return key
 end
+
+function getFileExtension(url)
+  return url:match("^.+(%..+)$")
+end
+
+--Conta lunghezza tabella
+function tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+function controllo_allowed_chars_lua(T)
+  for _,i in pairs(T) do 
+    if not string.match(i,'%a') then return nil end
+  end
+  return 1
+end
+
+function wordlist_iterate_lua(wordlist, scheme)
+  local coords={}
+  for _,i in pairs(wordlist) do
+    local line=table.concat(i,'')
+    local condition_coords=pattern_search(scheme,line)
+    if not condition_coords then return nil else coords[#coords+1]=condition_coords end
+  end
+  return coords
+end
 -------------------------------------------------------------------------------------------------------------------------
-file1=arg[1]
-wordlist=arg[2]
-scheme=scomponi(file1)
-if not check_file_chars(wordlist) then print("?") end
-coords = wordlist_iterate(wordlist,scheme)
-if not coords then print("?") end
-key=keyword(scheme,coords)
-if key~='' then print("The mysterious key is...\"" .. key .. "\"") else print("?") end
+--assumo che lo schema passato come parametro possa essere un file .txt o un file .lua
+--assumo che se il file è .lua lo schema viene chiamato "schema" e la wordlist "elenco"
+file1=nil
+scheme=nil
+
+if getFileExtension(arg[1])==".lua" and getFileExtension(arg[2])==".lua" then 
+  scheme=assert(loadfile(arg[1]),"File does not exist or wrong formatted!"); scheme()
+  for _,i in pairs(schema) do
+    if tablelength(i)~=tablelength(schema[1]) then return print("?") end
+    if not controllo_allowed_chars_lua(i) then return print("?") end
+  end
+  wordlist=assert(loadfile(arg[2]),"File does not exist!"); wordlist()
+  for _,i in pairs(elenco) do
+    if not controllo_allowed_chars_lua(i) then return print("?") end
+  end
+  coords = wordlist_iterate_lua(elenco,schema)
+  if not coords then return print("?") end
+  key=keyword(schema,coords)
+  if key~='' then return print("The mysterious key is...\"" .. key .. "\"") else return print("?") end
+  
+elseif
+  getFileExtension(arg[1])==".txt" and getFileExtension(arg[2])==".txt" then
+    file1=arg[1]
+    scheme=scomponi(file1)
+    wordlist=arg[2]
+    if not check_file_chars(wordlist) then return print("?") end
+    coords = wordlist_iterate(wordlist,scheme)
+    if not coords then return print("?") end
+    key=keyword(scheme,coords)
+    if key~='' then return print("The mysterious key is...\"" .. key .. "\"") else return print("?") end
+end
+
+
 -------------------------------------------------------------------------------------------------------------------------

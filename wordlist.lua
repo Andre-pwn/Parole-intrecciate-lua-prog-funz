@@ -1,0 +1,17 @@
+elenco={
+  {"birilli"},
+  {"carte"},
+  {"corda"},
+  {"dama"},
+  {"domino"},
+  {"fionda"},
+  {"manches"},
+  {"palla"},
+  {"pingpong"},
+  {"pegno"},
+  {"premio"},
+  {"regole"},
+  {"sala"},
+  {"scacchi"},
+  {"trottola"}
+  }
